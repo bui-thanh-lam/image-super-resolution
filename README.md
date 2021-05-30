@@ -3,7 +3,7 @@
 ## 1. Overview
 
 Super resolution is a ill-posed problem in Computer Vision: given a low resolution image (LR), you must produce a high resolution one (SR) 
-which can compare to a reference image (HR).
+which is comparable to a reference image (HR).
 
 Before deep learning era, there have been many super resolution methods such as bilinear, bicubic. In this project, we re-implement SRCNN (Chao Dong et al., 2015),
 which is the very first method using CNN to solve the problem. Furthermore, we explore some pros and cons of SRCNN and then propose a modified version called SRCNN++.
