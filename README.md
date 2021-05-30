@@ -78,10 +78,10 @@ It took about 2.5 GB VRAM and 30 seconds/epoch (except i/o reading time which is
 
 For other hyper parameter tuning, please read the code and modify it if you want.
 
-# How to contribute
+## 3. How to contribute
 
 If there are any issues with this repository, feel free to leave it to Issue tab.
 
-If you have any idea to extend this project or improve models' performance, please make a pull request.
+If you have any idea to extend this project or improve models' performance, please fmake a pull request.
 
 You can use this code totally free for any purposes.
