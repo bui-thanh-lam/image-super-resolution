@@ -28,9 +28,14 @@ else:
     mode = ImageReadMode.RGB
     pil_mode = 'RGB'
 
-if args.model == 'bicubic': model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
-elif args.model == 'srcnn': model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
-else: model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
+if args.model == 'bicubic': 
+    model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
+elif args.model == 'srcnn': 
+    model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
+    model.load_state_dict(torch.load(args.from_pretrained))
+else: 
+    model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
+    model.load_state_dict(torch.load(args.from_pretrained))
 
 model.load_state_dict(torch.load(args.from_pretrained))
 print(model)

@@ -43,7 +43,7 @@ args.add_argument('--hr_dir', type=str, help='Path to high-res (target) images d
 args.add_argument('--meta_file', type=str, help='Path to the metadata file', default="../data/train/file_names.txt")
 args.add_argument('--n_epochs', type=int, help='Number of training epochs', default=20)
 args.add_argument('--scale_factor', type=float, help='Scale factor', default=2)
-args.add_argument('--model', type=str, help='Name of the model: bicubic, srcnn or srcnnpp', default='srcnnpp')
+args.add_argument('--model', type=str, help='Name of the model: srcnn or srcnnpp', default='srcnnpp')
 args.add_argument('--lr', type=float, help='Init learning rate', default=1e-4)
 args.add_argument('--loss', type=str, help='Name of the loss function: mse or combined', default='mse')
 args.add_argument('--bs', type=int, help='Training batch size', default=64)
@@ -59,8 +59,7 @@ else:
     N_CHANNELS = 3
     mode = ImageReadMode.RGB
 
-if args.model == 'bicubic': model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
-elif args.model == 'srcnn': model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
+if args.model == 'srcnn': model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
 else: model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
 
 if args.loss == 'combined': loss_func = CombinedLoss(pixel_loss_coeff=0.8)

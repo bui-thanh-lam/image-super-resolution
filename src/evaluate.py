@@ -29,11 +29,15 @@ else:
     N_CHANNELS = 3
     mode = ImageReadMode.RGB
 
-if args.model == 'bicubic': model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
-elif args.model == 'srcnn': model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
-else: model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
+if args.model == 'bicubic': 
+    model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
+elif args.model == 'srcnn': 
+    model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
+    model.load_state_dict(torch.load(args.from_pretrained))
+else: 
+    model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
+    model.load_state_dict(torch.load(args.from_pretrained))
 
-model.load_state_dict(torch.load(args.from_pretrained))
 print(model)
 
 mse = torch.nn.MSELoss()
@@ -54,4 +58,4 @@ with torch.no_grad():
     loss /= len(dataloader)
 
 print("=======PSNR on test set=======")
-print(f"{10 * math.log10(1.0**2 / loss):.2f}")
+print(f"{10 * math.log10(1.0 / loss):.2f}")
