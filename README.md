@@ -40,13 +40,13 @@ pixel loss. Our method produce slightly higher PSNR than the original SRCNN, whi
 
 *(one image, .jpg or .png)*
 
-`` python infer.py \
+`` python infer.py \ ``
 
---lr_file [path_to_input_file] --sr_file [path_to_output_file] \
+`` --lr_file [path_to_input_file] --sr_file [path_to_output_file] \ ``
 
---scale_factor [scale_factor] --color_mode [color_mode] \
+`` --scale_factor [scale_factor] --color_mode [color_mode] \ ``
 
---model [model_type] --from_pretrained [path_to_weights] ``
+`` --model [model_type] --from_pretrained [path_to_weights] ``
 
 ### Use for training
 
@@ -63,17 +63,17 @@ If you have another metadata file format, please write your custom PyTorch Datas
 
 Command:
 
-`` python train.py \
+`` python train.py \ ``
 
---lr_dir [path_to_input_dir] --hr_dir [path_to_target_dir] --meta_file [path_to_metadata_file] \
+`` --lr_dir [path_to_input_dir] --hr_dir [path_to_target_dir] --meta_file [path_to_metadata_file] \ ``
 
---model [model_type] --loss [loss_type] \
+`` --model [model_type] --loss [loss_type] \ ``
 
---scale_factor [scale_factor] --color_mode [color_mode] \
+`` --scale_factor [scale_factor] --color_mode [color_mode] \ ``
 
---lr [learning_rate] --bs [batch_size] --n_epochs [num_of_epochs] \
+`` --lr [learning_rate] --bs [batch_size] --n_epochs [num_of_epochs] \ ``
 
---saved_weights_file [path_to_save_the_weights]``
+`` --saved_weights_file [path_to_save_the_weights] ``
 
 ### Use for evaluation
 
@@ -83,21 +83,21 @@ You can use any other dataset if you want; however, you must also provide a meta
 
 Command:
 
-`` python evaluate.py \
+`` python evaluate.py \ ``
 
---lr_dir [path_to_input_dir] --hr_dir [path_to_target_dir] --meta_file [path_to_metadata_file] \
+`` --lr_dir [path_to_input_dir] --hr_dir [path_to_target_dir] --meta_file [path_to_metadata_file] \ ``
 
---model [model_type] \
+`` --model [model_type] \ ``
 
---scale_factor [scale_factor] --color_mode [color_mode] \
+`` --scale_factor [scale_factor] --color_mode [color_mode] \ ``
 
---bs [eval_batch_size] \
+`` --bs [eval_batch_size] \ ``
 
---from_pretrained [path_to_weights] ``
+`` --from_pretrained [path_to_weights] ``
 
 ## Some helpful notes
 
-Run python [script_name].py --help if you need help command usage.
+Run `` python [script_name].py --help `` if you need help command usage.
 
 We trained our models on a P100 GPU with 8000 images, target size 100x100 pixels. PSNR on Set14 was ~ 30 dB.
 
