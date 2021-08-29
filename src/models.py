@@ -49,26 +49,29 @@ class SRCNN(nn.Module):
     
 class SRCNNpp(nn.Module):
 
-    def __init__(self, scale_factor=2, n_channels=3, f_up1=9, f_up2=5, f_ref1=11, f_ref2=5, f_ref3=9, h1=64, h2=32):
+    def __init__(self, 
+        scale_factor=2, n_channels=3, 
+        f_up1=5, f_up2=5, 
+        h_up=64,
+        f_ref1=9, f_ref2=5, f_ref3=5, 
+        h_ref1=64, h_ref2=32):
         super().__init__()
 
         self.scale_factor = scale_factor
 
         self.upsampler = nn.Sequential(
-            nn.Conv2d(n_channels, h1, kernel_size=f_up1, stride=1, padding=(f_up1 - 1) // 2),
+            nn.Conv2d(n_channels, h_up, kernel_size=f_up1, stride=1, padding=(f_up1 - 1) // 2),
+            nn.Conv2d(h_up, n_channels * (scale_factor**2), kernel_size=f_up2, stride=1, padding=(f_up2 - 1) // 2),
             nn.Dropout(0.2),
-            nn.Conv2d(h1, h2, kernel_size=f_up1, stride=1, padding=(f_up1 - 1) // 2),
-            nn.Dropout(0.2),
-            nn.Conv2d(h2, n_channels * (scale_factor**2), kernel_size=f_up2, stride=1, padding=(f_up2 - 1) // 2),
             nn.PixelShuffle(scale_factor),
             nn.Sigmoid()
         )
         self.refiner = nn.Sequential(
-            nn.Conv2d(n_channels, h1, kernel_size=f_ref1, stride=1, padding=(f_ref1-1) // 2, bias=False),
+            nn.Conv2d(n_channels, h_ref1, kernel_size=f_ref1, stride=1, padding=(f_ref1-1) // 2, bias=False),
             nn.ReLU(),
-            nn.Conv2d(h1, h2, kernel_size=5, stride=1, padding=(f_ref2-1) // 2, bias=False),
+            nn.Conv2d(h_ref1, h_ref2, kernel_size=5, stride=1, padding=(f_ref2-1) // 2, bias=False),
             nn.ReLU(),
-            nn.Conv2d(h2, n_channels, kernel_size=f_ref3, stride=1, padding=(f_ref3-1) // 2)
+            nn.Conv2d(h_ref2, n_channels, kernel_size=f_ref3, stride=1, padding=(f_ref3-1) // 2)
         )
 
     def forward(self, inputs):

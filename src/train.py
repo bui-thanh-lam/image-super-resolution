@@ -1,124 +1,82 @@
-from utils import *
+from argparse import ArgumentParser
+from dataset import SRDataset
 from models import *
-import math
-import time
+import torch
+from torch.utils.data import DataLoader
+from torchvision.io.image import ImageReadMode
 
-SCALE_FACTOR = 2
+
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def train(model, iterator, criterion, optimizer):
+def train_epoch(model, dataloader, criterion, optimizer):
     """Main function to train a model.
 
     Args:
-        model (nn.Module): any PyTorch model.
-        iterator (list): an iterator throughout dataset.
-        criterion (nn Loss function): any PyToch-like (original or custom) loss function.
-        optimizer (torch.optim): any PyTorch optimizer.
+        model (PyTorch nn.Module): Bibubic, SRCNN or SRCNNpp.
+        iterator (PyTorch Dataloader): a PyTorch dataloader contains a SRDataset.
+        criterion (PyTorch nn.Module): MSELoss or CombinedLoss.
+        optimizer (PyTorch torch.optim): any PyTorch optimizer.
 
     Returns:
         loss (float32): loss at current epoch.
     """
     model.train()
-    bs = len(iterator[0])
     epoch_loss = 0
-    for i, batch in enumerate(iterator):
-        inputs, targets = prepare_tensors(batch, 
-                                          LR_folder_path=f"./data/train/LRx{str(SCALE_FACTOR)}/", 
-                                          HR_folder_path=f"./data/train/HR/")
+    for i, batch in enumerate(dataloader):
         optimizer.zero_grad()
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
+        input, target = batch
+        input = input.to(DEVICE)
+        target = target.to(DEVICE)
+        output = model(input)
+        loss = criterion(output, target)
         loss.backward()
-        optimizer.step()
         epoch_loss += loss.item()
-    return epoch_loss / len(iterator)
+        optimizer.step()
+    return epoch_loss / len(dataloader)
 
 
-def evaluate(model, iterator):
-    """Evaluate a model during training time on validation set.
-
-    Args:
-        model (nn.Module): any PyTorch model.
-        iterator (list): an iterator throughout dataset.
-
-    Returns:
-        psnr (float32): average PSNR on validation set at current epoch.
-    """
-    model.eval()
-    bs = len(iterator[0])
-    epoch_loss = 0
-    for i, batch in enumerate(iterator):
-        inputs, targets = prepare_tensors(batch, 
-                                          LR_folder_path=f"./data/validation/LRx{str(SCALE_FACTOR)}/", 
-                                          HR_folder_path=f"./data/validation/HR/")
-        with torch.no_grad():
-            outputs = model(inputs)
-            loss = F.mse_loss(outputs, targets)
-            epoch_loss += loss.item()
-    epoch_loss = epoch_loss / len(iterator)
-    psnr = 10*math.log(1.0/epoch_loss, 10)
-    return psnr
-
-
-def epoch_time(start_time, end_time):
-    elapsed_time = end_time - start_time
-    elapsed_mins = int(elapsed_time / 60)
-    elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
-    return elapsed_mins, elapsed_secs
-
-
-def benchmark(model, test_set='Set5'):
-    """Evaluate a model during training time on validation set.
-
-    Args:
-        model (nn.Module): any PyTorch model.
-        iterator (list): an iterator throughout dataset.
-
-    Returns:
-        psnr (float32): average PSNR on test set.
-    """
-    N_EXAMPLES = 14 if test_set == 'Set14' else 5
-    test_iter = make_iterator(n_examples=N_EXAMPLES, batch_size=1)
-    LR_FOLDER_PATH = f"./data/test/{test_set}/LRx{str(model.scale_factor)}/"
-    HR_FOLDER_PATH = f"./data/test/{test_set}/HR/"
-    model.eval()
-    bs = len(test_iter[0])
-    epoch_loss = 0
-    for i, batch in enumerate(test_iter):
-        inputs, targets = prepare_tensors(batch, 
-                                          LR_folder_path=LR_FOLDER_PATH, 
-                                          HR_folder_path=HR_FOLDER_PATH)
-        with torch.no_grad():
-            outputs = model(inputs)
-            loss = F.mse_loss(outputs, targets)
-            epoch_loss += loss.item()
-    epoch_loss = epoch_loss / len(test_iter)
-    psnr = 10*math.log(1.0/epoch_loss, 10)
-    return psnr
-
+# Add the arguments
+args = ArgumentParser()
+args.add_argument('--lr_dir', type=str, help='Path to low-res (input) images directory', default="../data/train/LR/")
+args.add_argument('--hr_dir', type=str, help='Path to high-res (target) images directory', default="../data/train/HR/")
+args.add_argument('--meta_file', type=str, help='Path to the metadata file', default="../data/train/file_names.txt")
+args.add_argument('--n_epochs', type=int, help='Number of training epochs', default=20)
+args.add_argument('--scale_factor', type=float, help='Scale factor', default=2)
+args.add_argument('--model', type=str, help='Name of the model: bicubic, srcnn or srcnnpp', default='srcnnpp')
+args.add_argument('--lr', type=float, help='Init learning rate', default=1e-4)
+args.add_argument('--loss', type=str, help='Name of the loss function: mse or combined', default='mse')
+args.add_argument('--bs', type=int, help='Training batch size', default=64)
+args.add_argument('--color_mode', type=str, help='Color mode of training images: gray or rgb', default='rgb')
+args.add_argument('--saved_weights_file', type=str, help='Path to the file that stores the weights after training', default="../weights/saved_weights.pt")
+args = args.parse_args()
 
 # Hyper params setting and training
-N_EPOCHS = 100
-BATCH_SIZE = 64
-N_EXAMPLES = 8000
-model = SRCNNpp(scale_factor=SCALE_FACTOR).to(DEVICE)
-loss_func = CombinedLoss(pixel_loss_coeff=0.8)
-# loss_func = nn.MSELoss()
+if args.color_mode == 'gray':
+    N_CHANNELS = 1
+    mode = ImageReadMode.GRAY
+else:
+    N_CHANNELS = 3
+    mode = ImageReadMode.RGB
 
-optim = torch.optim.Adam(model.parameters(), lr=1e-4)
-for epoch in range(N_EPOCHS):
-    print(f"Epoch {epoch+1}")
-    start_time = time.time()
-    train_iter = make_iterator(n_examples=N_EXAMPLES, batch_size=BATCH_SIZE)
-    train_loss = train(model, train_iter, loss_func, optim)
-    end_time = time.time()
-    epoch_mins, epoch_secs = epoch_time(start_time, end_time)
-    valid_iter = make_iterator(n_examples=100, batch_size=8, start_filename=8100)
-    psnr = evaluate(model, valid_iter)
-    print(f"\tTime: {epoch_mins}m {epoch_secs}s")
+if args.model == 'bicubic': model = Bicubic(scale_factor=args.scale_factor).to(DEVICE)
+elif args.model == 'srcnn': model = SRCNN(scale_factor=args.scale_factor).to(DEVICE)
+else: model = SRCNNpp(scale_factor=args.scale_factor).to(DEVICE)
+
+if args.loss == 'combined': loss_func = CombinedLoss(pixel_loss_coeff=0.8)
+else: loss_func = torch.nn.MSELoss()
+
+optim = torch.optim.AdamW(model.parameters(), lr=args.lr)
+
+train_set = SRDataset(LR_dir=args.lr_dir, HR_dir=args.hr_dir, metadata_file=args.meta_file, mode=mode)
+
+dataloader = DataLoader(train_set, batch_size=args.bs, shuffle=True, num_workers=2)
+
+
+for epoch in range(args.n_epochs):
+    print(f"Epoch {epoch+1}:")
+    train_loss = train_epoch(model, dataloader, loss_func, optim)
     print(f"\tTrain loss: {train_loss:.4f}")
-    print(f"\tValid PSNR: {psnr:.2f}")
-    
-psnr = benchmark(model, test_set='Set14')
-print(f"PSNR on test set: {psnr:.2f}")
+
+# Save weights
+torch.save(model.state_dict(), args.saved_weights_file)
