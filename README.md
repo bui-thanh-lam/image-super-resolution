@@ -1,6 +1,8 @@
 # Single image super resolution with SRCNN & SRCNN++
 
-## 1. Overview
+--------------------
+
+# 1. Overview
 
 Super resolution is a ill-posed problem in Computer Vision: given a low resolution image (LR), you must produce a high resolution one (SR) 
 which is comparable to a reference image (HR).
@@ -11,7 +13,7 @@ which is the very first method using CNN to solve the problem. Furthermore, we e
 We take the main idea of SRCNN, but then use sub-pixel layer (W. Shi et al., 2016) instead of bicubic layer, and a combined loss (C. Ledig et al., 2017) instead of
 pixel loss. Our method produce slightly higher PSNR than the original SRCNN, while training and prediction time is competitive.
 
-## 2. How to use
+# 2. How to use
 
 ### Prerequisites: Python 3.6+ (test on 3.6, 3.7)
 
@@ -95,7 +97,7 @@ Command:
 
 `` --from_pretrained [path_to_weights] ``
 
-## Some helpful notes
+# 3. Some helpful notes
 
 Run `` python [script_name].py --help `` if you need help command usage.
 
@@ -109,7 +111,7 @@ For prediction, you should not feed a high resolution to the model. Model perfor
 
 If you use SRCNN++, it cannot perform multiple scale factors. You must train separated models for each one.
 
-## 3. How to contribute
+# 4. How to contribute
 
 If there are any issues with this repository, feel free to leave it to Issues tab.
 
