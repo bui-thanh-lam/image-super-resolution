@@ -54,10 +54,13 @@ pixel loss. Our method produce slightly higher PSNR than the original SRCNN, whi
 
 You must provide a metadata file that contains all of your image file names. It is a text file like this:
 
-img_000.png
-img_002.png
-...
-img_999.png
+`` img_000.png ``
+
+`` img_002.png ``
+
+`` ... ``
+
+`` img_999.png ``
 
 This filename is identical for each input image and its target
 
